@@ -5,6 +5,7 @@ import {code} from "telegraf/format";
 import {message} from "telegraf/filters";
 import {ogg} from "./ogg.js"
 import {openAi} from "./openAi.js";
+import {removeFile} from "./utils.js";
 
 const bot = new Telegraf(config.get('TELEGRAM_TOKEN'))
 const INITIAL_SESSION = {
@@ -41,6 +42,7 @@ bot.on(message('voice'), async (ctx) => {
         ctx.session.messages.push({role: openAi.roles.ASSISTANT, content: response.content})
 
         await ctx.reply(code(`Отвечаю! ${response.content}`))
+        await removeFile(mp3Path)
     } catch (e) {
         console.log(`Error while voice message ${e.message}`)
     }
@@ -53,11 +55,12 @@ bot.on(message('text'), async (ctx) => {
         ctx.session.messages.push({role: openAi.roles.USER, content: ctx.message.text})
 
         const response = await openAi.chat(ctx.session.messages)
+
         ctx.session.messages.push({role: openAi.roles.ASSISTANT, content: response.content})
 
         await ctx.reply(code(`Отвечаю! ${response.content}`))
     } catch (e) {
-        console.log(`Error while voice message ${e.message}`)
+        console.log(`Error while text message ${e.message}`)
     }
 })
 
